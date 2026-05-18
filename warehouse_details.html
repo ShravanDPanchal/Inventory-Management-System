@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Staff Panel - IMS{% endblock %}
+{% block content %}
+<div class="main-container">
+    <!-- Header Section -->
+    <div class="premium-card">
+        <div class="brand-row">
+            <div class="brand-icon"><i class="fas fa-user-tie"></i></div>
+            <span class="brand-label">Workplace Overview</span>
+        </div>
+
+        <div class="premium-form-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="premium-form-title">Warehouse Staff Panel</h2>
+                    <p class="premium-form-subtitle">Welcome back, <strong>{{ current_user.username }}</strong>. Active Shift Summary.</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-muted" style="font-size: 0.8rem; font-weight: 700;">{{ today_date }}</div>
+                    <div class="badge badge-success" style="margin-top: 5px;"><i class="fas fa-circle" style="font-size: 0.5rem; vertical-align: middle;"></i> SHIFT ACTIVE</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-4" style="margin-top: 2rem;">
+            <div class="stats-card">
+                <div class="summary-title">Today's Ops</div>
+                <div class="stats-number">{{ my_operations_today }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">MOVEMENTS</div>
+            </div>
+            <div class="stats-card">
+                <div class="summary-title">Pending</div>
+                <div class="stats-number">{{ pending_tasks }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">TASKS</div>
+            </div>
+            <div class="stats-card">
+                <div class="summary-title">Alerts</div>
+                <div class="stats-number">{{ low_stock_count }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">LOW STOCK</div>
+            </div>
+            <div class="stats-card">
+                <div class="summary-title">Coverage</div>
+                <div class="stats-number">{{ products_in_warehouse }}</div>
+                <div class="text-muted" style="font-size: 0.7rem;">PRODUCTS</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-4" style="margin-bottom: 2rem;">
+        <a href="{{ url_for('new_operation', op_type='Receipt') }}" class="premium-card" style="padding: 1.5rem; text-decoration: none; text-align: center; margin-bottom: 0;">
+            <div class="brand-icon" style="margin: 0 auto 1rem; background: #dcfce7; color: #15803d;"><i class="fas fa-arrow-down"></i></div>
+            <div style="font-weight: 800; color: var(--gray-900);">Receive</div>
+        </a>
+        <a href="{{ url_for('new_operation', op_type='Delivery') }}" class="premium-card" style="padding: 1.5rem; text-decoration: none; text-align: center; margin-bottom: 0;">
+            <div class="brand-icon" style="margin: 0 auto 1rem; background: #fee2e2; color: #b91c1c;"><i class="fas fa-arrow-up"></i></div>
+            <div style="font-weight: 800; color: var(--gray-900);">Deliver</div>
+        </a>
+        <a href="{{ url_for('new_operation', op_type='Transfer') }}" class="premium-card" style="padding: 1.5rem; text-decoration: none; text-align: center; margin-bottom: 0;">
+            <div class="brand-icon" style="margin: 0 auto 1rem; background: #ffedd5; color: #c2410c;"><i class="fas fa-exchange-alt"></i></div>
+            <div style="font-weight: 800; color: var(--gray-900);">Transfer</div>
+        </a>
+        <a href="{{ url_for('new_operation', op_type='Adjustment') }}" class="premium-card" style="padding: 1.5rem; text-decoration: none; text-align: center; margin-bottom: 0;">
+            <div class="brand-icon" style="margin: 0 auto 1rem; background: #dbeafe; color: #1e40af;"><i class="fas fa-tools"></i></div>
+            <div style="font-weight: 800; color: var(--gray-900);">Adjust</div>
+        </a>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Left: Alerts & Capacity -->
+        <div>
+            <div class="premium-card">
+                <h3 class="premium-form-title" style="font-size: 1.1rem; margin-bottom: 1.5rem;"><i class="fas fa-exclamation-triangle text-danger"></i> Low Stock Alerts</h3>
+                <div class="table-container">
+                    <table class="table">
+                        {% for item in low_stock_list %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700;">{{ item.name }}</div>
+                                <code style="font-size: 0.65rem;">{{ item.sku }}</code>
+                            </td>
+                            <td class="text-right">
+                                <span class="badge badge-{% if item.status == 'OUT' %}danger{% else %}warning{% endif %}">
+                                    {{ item.qty }} {{ item.unit }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td class="text-muted text-center">All stocks healthy!</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="premium-card">
+                <h3 class="premium-form-title" style="font-size: 1.1rem; margin-bottom: 1.5rem;"><i class="fas fa-pills text-primary"></i> Warehouse Load</h3>
+                {% for wh in warehouse_capacities %}
+                <div style="margin-bottom: 1.25rem;">
+                    <div class="d-flex justify-content-between" style="font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">
+                        <span>{{ wh.name }}</span>
+                        <span style="color: var(--primary-color);">{{ wh.pct }}%</span>
+                    </div>
+                    <div style="height: 6px; background: var(--gray-100); border-radius: 10px; overflow: hidden;">
+                        <div style="width: {{ wh.pct }}%; height: 100%; background: var(--accent-gradient); border-radius: 10px;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Recent Activity & Search -->
+        <div>
+            <div class="premium-card">
+                <h3 class="premium-form-title" style="font-size: 1.1rem; margin-bottom: 1.5rem;"><i class="fas fa-history text-muted"></i> Recent Movements</h3>
+                <div class="table-container">
+                    <table class="table">
+                        {% for op in recent_operations %}
+                        <tr>
+                            <td style="width: 80px;"><span class="text-muted" style="font-size: 0.75rem;">{{ op.timestamp.strftime('%H:%M') }}</span></td>
+                            <td>
+                                <span class="badge badge-{% if op.type == 'Receipt' %}success{% elif op.type == 'Delivery' %}danger{% elif op.type == 'Transfer' %}warning{% else %}info{% endif %}">
+                                    {{ op.type[0:3] }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.8rem; font-weight: 600;">
+                                    {% if op.movements %}
+                                        {{ op.movements[0].product.name }}
+                                    {% else %}
+                                        System Task
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-right"><span class="badge badge-info" style="font-size: 0.6rem;">{{ op.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            <div class="premium-card">
+                <h3 class="premium-form-title" style="font-size: 1.1rem; margin-bottom: 1.5rem;"><i class="fas fa-search text-muted"></i> Stock Lookup</h3>
+                <div class="premium-field" style="margin-bottom: 1.5rem;">
+                    <input type="text" class="form-control" id="stockSearch" placeholder="Search by name or SKU..." style="background: white;">
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody">
+                            {% for item in inventory_list[:5] %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 700; font-size: 0.85rem;">{{ item.name }}</div>
+                                    <code style="font-size: 0.65rem;">{{ item.sku }}</code>
+                                </td>
+                                <td><span style="font-weight: 800;">{{ item.qty }}</span></td>
+                                <td><span class="badge badge-{% if item.status|lower == 'ok' %}success{% else %}warning{% endif %}" style="font-size: 0.6rem;">{{ item.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const allInventory = {{ inventory_list|tojson }};
+    
+    document.getElementById('stockSearch').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const tbody = document.getElementById('stockTableBody');
+        tbody.innerHTML = '';
+        
+        const filtered = allInventory.filter(item => 
+            item.name.toLowerCase().includes(query) || 
+            item.sku.toLowerCase().includes(query)
+        ).slice(0, 5);
+        
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight: 700; font-size: 0.85rem;">${item.name}</div>
+                    <code style="font-size: 0.65rem;">${item.sku}</code>
+                </td>
+                <td><span style="font-weight: 800;">${item.qty}</span></td>
+                <td><span class="badge badge-${item.status.toLowerCase() === 'ok' ? 'success' : 'warning'}" style="font-size: 0.6rem;">${item.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+</script>
+{% endblock %}

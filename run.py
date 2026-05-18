@@ -1,0 +1,14 @@
+Flask>=2.0.0
+flask-sqlalchemy
+flask-login
+flask-wtf
+flask-mail
+flask-migrate
+pandas>=1.5.0
+numpy>=1.21.0
+openpyxl
+python-dotenv
+wtforms
+email-validator
+psycopg2-binary
+gunicorn
